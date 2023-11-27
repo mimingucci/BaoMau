@@ -66,4 +66,8 @@ public class CustomerService {
         }
         return true;
     }
+
+    public void updateCustomer(Customer customer){
+
+    }
 }

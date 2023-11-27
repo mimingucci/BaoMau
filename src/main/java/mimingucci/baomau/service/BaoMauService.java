@@ -7,6 +7,9 @@ import mimingucci.baomau.repository.BaoMauRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Date;
+
 @Service
 @Transactional
 public class BaoMauService {
@@ -44,5 +47,26 @@ public class BaoMauService {
 
     public void updateDescription(int id, String description){
         baoMauRepository.updateDescription(id, description);
+    }
+
+    public void updateBaoMau(BaoMau baoMau){
+        baoMauRepository.save(baoMau);
+    }
+
+    public boolean createBaoMau(String email, String password, String firstname, String lastname, String description){
+        if(haveEmailBefore(email)){
+            return false;
+        }
+        BaoMau baoMau=new BaoMau();
+        baoMau.setEmail(email);
+        baoMau.setPassword(password);
+        baoMau.setFirstname(firstname);
+        baoMau.setLastname(lastname);
+        baoMau.setDescription(description);
+        baoMau.setCreatedtime(new Date());
+        baoMau.setEnabled(false);
+        baoMau.setReviews(new ArrayList<>());
+        baoMauRepository.save(baoMau);
+        return true;
     }
 }

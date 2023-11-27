@@ -14,7 +14,7 @@ public interface BaoMauRepository extends JpaRepository<BaoMau, Integer> {
     @Modifying
     void updateEnabledStatus(int id, boolean enabled);
 
-    @Query("update BaoMau i set i.package=?2 where i.id=?1")
+    @Query("update BaoMau i set i.password=?2 where i.id=?1")
     @Modifying
     void updatePassword(int id, String password);
 

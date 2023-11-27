@@ -20,8 +20,8 @@ public class Post {
 
     private Set<Integer> disagree=new HashSet<>();
 
-    @Column(name = "review_time", nullable = false)
-    private Date reviewtime;
+    @Column(name = "posted_time", nullable = false)
+    private Date postedtime;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "post_id")
@@ -70,12 +70,12 @@ public class Post {
         this.disagree = disagree;
     }
 
-    public Date getReviewtime() {
-        return reviewtime;
+    public Date getPostedtime() {
+        return postedtime;
     }
 
-    public void setReviewtime(Date reviewtime) {
-        this.reviewtime = reviewtime;
+    public void setPostedtime(Date postedtime) {
+        this.postedtime = postedtime;
     }
 
     public List<Comment> getComments() {

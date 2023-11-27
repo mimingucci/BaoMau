@@ -2,7 +2,9 @@ package mimingucci.baomau.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "customer")
@@ -22,6 +24,20 @@ public class Customer {
     private Boolean enabled;
     @Column(name = "created_name")
     private Date createdtime;
+
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Post> posts=new ArrayList<>();
+
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
+    }
 
     public Customer() {
     }
@@ -88,5 +104,18 @@ public class Customer {
 
     public void setCreatedtime(Date createdtime) {
         this.createdtime = createdtime;
+    }
+
+    public void addPost(Post post){
+        this.posts.add(post);
+    }
+
+    public void deletePost(Post post){
+        for(int i=0; i<this.posts.size(); i++){
+            if(this.posts.get(i).getId()==post.getId()){
+                this.posts.remove(i);
+                break;
+            }
+        }
     }
 }
