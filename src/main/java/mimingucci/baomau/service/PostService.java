@@ -25,7 +25,7 @@ public class PostService {
     @Autowired
     private CustomerRepository customerRepository;
 
-    public void createPost(int customerid, String headline, String comment) throws CustomerNotFoundException {
+    public Post createPost(int customerid, String headline, String comment) throws CustomerNotFoundException {
         Customer customer=customerService.findCustomerById(customerid);
         Post post=new Post();
         post.setAgree(new HashSet<>());
@@ -34,8 +34,10 @@ public class PostService {
         post.setComment(comment);
         post.setComments(new ArrayList<>());
         post.setPostedtime(new Date());
-        customer.addPost(postRepository.save(post));
+        Post savedPost=postRepository.save(post);
+        customer.addPost(savedPost);
         customerRepository.save(customer);
+        return savedPost;
     }
 
     public void deletePost(int postid){
@@ -48,7 +50,7 @@ public class PostService {
         this.customerRepository = customerRepository;
     }
 
-    public void updatePost(int postid, String headline, String comment){
+    public Post updatePost(int postid, String headline, String comment){
         Post post=postRepository.findById(postid).get();
         if(headline==null || headline.length()==0){
             headline=post.getHeadline();
@@ -57,6 +59,20 @@ public class PostService {
             comment=post.getComment();
         }
         postRepository.updatePost(postid, headline, comment);
+        return postRepository.findById(postid).get();
     }
 
+    public void updateAgree(int postid, int customerid){
+        Post post=postRepository.findById(postid).get();
+        post.getAgree().add(customerid);
+        if(post.getDisagree().contains(customerid))post.getDisagree().remove(customerid);
+        postRepository.save(post);
+    }
+
+    public void updateDisagree(int postid, int customerid){
+        Post post=postRepository.findById(postid).get();
+        post.getDisagree().add(customerid);
+        if(post.getAgree().contains(customerid))post.getAgree().remove(customerid);
+        postRepository.save(post);
+    }
 }

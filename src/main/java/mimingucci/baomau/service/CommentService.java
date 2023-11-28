@@ -26,7 +26,7 @@ public class CommentService {
      @Autowired
      private CustomerService customerService;
 
-     public void createComment(int postid, int customerid,String content) throws PostNotFoundException, CustomerNotFoundException {
+     public Comment createComment(int postid, int customerid,String content) throws PostNotFoundException, CustomerNotFoundException {
           Post post=postRepository.findById(postid).get();
           if(post==null){
                throw new PostNotFoundException("Khong tim thay bai post voi id: "+postid);
@@ -38,16 +38,32 @@ public class CommentService {
           comment.setContent(content);
           comment.setAgree(new HashSet<>());
           comment.setDisagree(new HashSet<>());
-          post.getComments().add(comment);
+          Comment cm=commentRepository.save(comment);
+          post.getComments().add(cm);
           postRepository.save(post);
+          return cm;
      }
 
      public void deleteComment(int commentid){
           commentRepository.deleteById(commentid);
      }
 
-     public void updateComment(int id, String content){
+     public Comment updateComment(int id, String content){
           commentRepository.updateComment(id, content);
+          return commentRepository.findById(id).get();
      }
 
+     public void updateAgree(int commentid, int customerid){
+          Comment comment=commentRepository.findById(commentid).get();
+          comment.getAgree().add(customerid);
+          if(comment.getDisagree().contains(customerid))comment.getDisagree().remove(customerid);
+          commentRepository.save(comment);
+     }
+
+     public void updateDisagree(int commentid, int customerid){
+          Comment comment=commentRepository.findById(commentid).get();
+          comment.getDisagree().add(customerid);
+          if(comment.getAgree().contains(customerid))comment.getAgree().remove(customerid);
+          commentRepository.save(comment);
+     }
 }
