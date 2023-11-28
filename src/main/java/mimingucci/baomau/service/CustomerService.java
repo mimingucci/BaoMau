@@ -45,7 +45,7 @@ public class CustomerService {
         customerRepository.updateEnabledStatus(id, enabled);
     }
 
-    public boolean createCustomer(String email, String password, String firstname, String lastname) throws AccountExistBeforeException {
+    public Customer createCustomer(String email, String password, String firstname, String lastname) throws AccountExistBeforeException {
         if(haveEmailBefore(email)){
             throw new AccountExistBeforeException("Email da duoc su dung "+email);
         }
@@ -55,8 +55,7 @@ public class CustomerService {
         customer.setPassword(password);
         customer.setFirstname(firstname);
         customer.setLastname(lastname);
-        customerRepository.save(customer);
-        return true;
+        return customerRepository.save(customer);
     }
 
     public boolean haveEmailBefore(String email){
@@ -67,7 +66,14 @@ public class CustomerService {
         return true;
     }
 
-    public void updateCustomer(Customer customer){
-
+    public Customer updateCustomer(int id, Customer customer){
+        Customer cs=customerRepository.findById(id).get();
+        if(cs==null){
+            return customerRepository.save(customer);
+        }
+        if(customer.getFirstname()!=null && customer.getFirstname().length()>0)cs.setFirstname(customer.getFirstname());
+        if(customer.getLastname()!=null && customer.getLastname().length()>0)cs.setLastname(customer.getLastname());
+        if(customer.getPassword()!=null && customer.getPassword().length()>0)cs.setPassword(customer.getPassword());
+        return customerRepository.save(cs);
     }
 }

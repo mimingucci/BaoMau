@@ -32,7 +32,7 @@ public class ReviewService {
         this.baoMauService = baoMauService;
     }
 
-    public void createReview(String headline, String comment, int rating, int customerid, int baomauid) throws CustomerNotFoundException, BaoMauNotFoundException {
+    public Review createReview(String headline, String comment, int rating, int customerid, int baomauid) throws CustomerNotFoundException, BaoMauNotFoundException {
         Customer customer=customerService.findCustomerById(customerid);
         BaoMau baoMau=baoMauService.findById(baomauid);
         Review review=new Review();
@@ -43,8 +43,10 @@ public class ReviewService {
         review.setReviewtime(new Date());
         review.setDisagree(new HashSet<>());
         review.setDisagree(new HashSet<>());
-        baoMau.getReviews().add(review);
-        baoMauService.updateBaoMau(baoMau);
+        Review rv=reviewRepository.save(review);
+        baoMau.getReviews().add(rv);
+        baoMauService.updateBaoMau(baomauid, baoMau);
+        return rv;
     }
 
     public void deleteReview(int reviewid){

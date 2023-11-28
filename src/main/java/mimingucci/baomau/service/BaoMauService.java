@@ -49,13 +49,21 @@ public class BaoMauService {
         baoMauRepository.updateDescription(id, description);
     }
 
-    public void updateBaoMau(BaoMau baoMau){
-        baoMauRepository.save(baoMau);
+    public BaoMau updateBaoMau(int id, BaoMau baoMau) throws BaoMauNotFoundException {
+        BaoMau bm=baoMauRepository.findById(id).get();
+        if(bm==null){
+            throw new BaoMauNotFoundException("Khong tim thay bao mau voi id: "+id);
+        }
+        if(baoMau.getFirstname()!=null && baoMau.getFirstname().length()>0)bm.setFirstname(baoMau.getFirstname());
+        if(baoMau.getLastname()!=null && baoMau.getLastname().length()>0)bm.setLastname(baoMau.getLastname());
+        if(baoMau.getPassword()!=null && baoMau.getPassword().length()>0)bm.setPassword(baoMau.getPassword());
+        if(baoMau.getDescription()!=null && baoMau.getDescription().length()>0)bm.setDescription(baoMau.getDescription());
+        return baoMauRepository.save(bm);
     }
 
-    public boolean createBaoMau(String email, String password, String firstname, String lastname, String description){
+    public BaoMau createBaoMau(String email, String password, String firstname, String lastname, String description){
         if(haveEmailBefore(email)){
-            return false;
+            return null;
         }
         BaoMau baoMau=new BaoMau();
         baoMau.setEmail(email);
@@ -66,7 +74,6 @@ public class BaoMauService {
         baoMau.setCreatedtime(new Date());
         baoMau.setEnabled(false);
         baoMau.setReviews(new ArrayList<>());
-        baoMauRepository.save(baoMau);
-        return true;
+        return baoMauRepository.save(baoMau);
     }
 }
