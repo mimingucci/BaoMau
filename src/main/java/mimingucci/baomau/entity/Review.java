@@ -1,10 +1,8 @@
 package mimingucci.baomau.entity;
 
-import jakarta.persistence.*;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import javax.persistence.*;
+import java.util.*;
 
 @Entity
 @Table(name = "review")
@@ -20,26 +18,36 @@ public class Review {
 
     private int rating;
 
-    private Set<Integer> agree=new HashSet<>();
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "review_like",
+            joinColumns = @JoinColumn(name = "review_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> agree=new ArrayList<>();
 
-    private Set<Integer> disagree=new HashSet<>();
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "review_dislike",
+            joinColumns = @JoinColumn(name = "review_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> disagree=new ArrayList<>();
 
     @Column(name = "review_time", nullable = false)
     private Date reviewtime;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @JoinColumn(name = "user_id")
+    private User author;
 
     public Review() {
     }
 
-    public Customer getCustomer() {
-        return customer;
+    public User getAuthor() {
+        return author;
     }
 
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
+    public void setAuthor(User author) {
+        this.author = author;
     }
 
     public Integer getId() {
@@ -74,19 +82,19 @@ public class Review {
         this.rating = rating;
     }
 
-    public Set<Integer> getAgree() {
+    public List<User> getAgree() {
         return agree;
     }
 
-    public void setAgree(Set<Integer> agree) {
+    public void setAgree(List<User> agree) {
         this.agree = agree;
     }
 
-    public Set<Integer> getDisagree() {
+    public List<User> getDisagree() {
         return disagree;
     }
 
-    public void setDisagree(Set<Integer> disagree) {
+    public void setDisagree(List<User> disagree) {
         this.disagree = disagree;
     }
 

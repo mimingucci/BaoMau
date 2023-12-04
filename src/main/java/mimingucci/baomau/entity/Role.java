@@ -1,6 +1,7 @@
 package mimingucci.baomau.entity;
 
-import jakarta.persistence.*;
+
+import javax.persistence.*;
 
 @Entity
 @Table(name = "role")

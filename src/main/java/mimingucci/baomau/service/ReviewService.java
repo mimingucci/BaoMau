@@ -1,16 +1,16 @@
 package mimingucci.baomau.service;
 
-import jakarta.transaction.Transactional;
-import mimingucci.baomau.entity.BaoMau;
-import mimingucci.baomau.entity.Customer;
+import mimingucci.baomau.entity.User;
 import mimingucci.baomau.entity.Review;
-import mimingucci.baomau.exception.BaoMauNotFoundException;
-import mimingucci.baomau.exception.CustomerNotFoundException;
+import mimingucci.baomau.exception.UserNotFoundException;
 import mimingucci.baomau.exception.ReviewNotFoundException;
 import mimingucci.baomau.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -21,31 +21,27 @@ public class ReviewService {
     private ReviewRepository reviewRepository;
 
     @Autowired
-    private CustomerService customerService;
+    private UserService userService;
 
-    @Autowired
-    private BaoMauService baoMauService;
-
-    public ReviewService(ReviewRepository reviewRepository, CustomerService customerService, BaoMauService baoMauService) {
+    public ReviewService(ReviewRepository reviewRepository, UserService userService) {
         this.reviewRepository = reviewRepository;
-        this.customerService = customerService;
-        this.baoMauService = baoMauService;
+        this.userService = userService;
     }
 
-    public Review createReview(String headline, String comment, int rating, int customerid, int baomauid) throws CustomerNotFoundException, BaoMauNotFoundException {
-        Customer customer=customerService.findCustomerById(customerid);
-        BaoMau baoMau=baoMauService.findById(baomauid);
+    public Review createReview(String headline, String comment, int rating, int authorid, int id) throws UserNotFoundException {
+        User author=userService.findUserById(authorid);
+        User user = userService.findById(id);
         Review review=new Review();
         review.setHeadline(headline);
         review.setComment(comment);
-        review.setCustomer(customer);
+        review.setAuthor(author);
         review.setRating(rating);
         review.setReviewtime(new Date());
-        review.setDisagree(new HashSet<>());
-        review.setDisagree(new HashSet<>());
+        review.setDisagree(new ArrayList<>());
+        review.setDisagree(new ArrayList<>());
         Review rv=reviewRepository.save(review);
-        baoMau.getReviews().add(rv);
-        baoMauService.updateBaoMau(baomauid, baoMau);
+        user.getReviews().add(rv);
+        userService.updateUser(id, user);
         return rv;
     }
 

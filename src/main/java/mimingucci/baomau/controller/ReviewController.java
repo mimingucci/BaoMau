@@ -1,8 +1,7 @@
 package mimingucci.baomau.controller;
 
 import mimingucci.baomau.entity.Review;
-import mimingucci.baomau.exception.BaoMauNotFoundException;
-import mimingucci.baomau.exception.CustomerNotFoundException;
+import mimingucci.baomau.exception.UserNotFoundException;
 import mimingucci.baomau.repository.ReviewRepository;
 import mimingucci.baomau.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +26,10 @@ public class ReviewController {
     }
 
     @PostMapping(path = "/create")
-    public ResponseEntity<?> createReview(@RequestParam int customerid, @RequestParam int baomauid, @RequestBody Review review){
+    public ResponseEntity<?> createReview(@RequestParam int authorid, @RequestParam int userid, @RequestBody Review review){
         try {
-            return new ResponseEntity<>(reviewService.createReview(review.getHeadline(), review.getComment(), review.getRating(), customerid, baomauid), HttpStatus.CREATED);
-        } catch (CustomerNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (BaoMauNotFoundException e) {
+            return new ResponseEntity<>(reviewService.createReview(review.getHeadline(), review.getComment(), review.getRating(), authorid, userid), HttpStatus.CREATED);
+        } catch (UserNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }

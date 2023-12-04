@@ -1,11 +1,8 @@
 package mimingucci.baomau.entity;
 
-import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import javax.persistence.*;
+import java.util.*;
 
 @Entity
 @Table(name = "comment")
@@ -15,14 +12,23 @@ public class Comment {
     private Integer id;
     @Column(name = "content", nullable = false)
     private String content;
-    @Column(name = "agree")
-    private Set<Integer> agree;
-    @Column(name = "disagree")
-    private Set<Integer> disagree;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "comment_like",
+            joinColumns = @JoinColumn(name = "comment_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> agree=new ArrayList<>();
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "comment_dislike",
+            joinColumns = @JoinColumn(name = "comment_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> disagree=new ArrayList<>();
     @Column(name = "comment_time", nullable = false)
     private Date commenttime;
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Customer author;
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    private User author;
 
     public Comment() {
     }
@@ -39,25 +45,26 @@ public class Comment {
         return content;
     }
 
+    public List<User> getAgree() {
+        return agree;
+    }
+
+    public void setAgree(List<User> agree) {
+        this.agree = agree;
+    }
+
+    public List<User> getDisagree() {
+        return disagree;
+    }
+
+    public void setDisagree(List<User> disagree) {
+        this.disagree = disagree;
+    }
+
     public void setContent(String content) {
         this.content = content;
     }
 
-    public Set<Integer> getAgree() {
-        return agree;
-    }
-
-    public void setAgree(Set<Integer> agree) {
-        this.agree = agree;
-    }
-
-    public Set<Integer> getDisagree() {
-        return disagree;
-    }
-
-    public void setDisagree(Set<Integer> disagree) {
-        this.disagree = disagree;
-    }
 
     public Date getCommenttime() {
         return commenttime;
@@ -67,27 +74,27 @@ public class Comment {
         this.commenttime = commenttime;
     }
 
-    public Customer getAuthor() {
+    public User getAuthor() {
         return author;
     }
 
-    public void setAuthor(Customer author) {
+    public void setAuthor(User author) {
         this.author = author;
     }
 
-    public void addagree(int id){
-        this.agree.add(id);
+    public void addAgree(User user){
+        this.agree.add(user);
     }
 
-    public void adddisagree(int id){
-        this.disagree.add(id);
+    public void addDisagree(User user){
+        this.disagree.add(user);
     }
 
-    public void deleteagree(int id){
+    public void deleteAgree(int id){
         this.agree.remove(id);
     }
 
-    public void deletedisagree(int id){
+    public void deleteDisagree(int id){
         this.disagree.remove(id);
     }
 }

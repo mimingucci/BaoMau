@@ -1,11 +1,11 @@
 package mimingucci.baomau.controller;
 
 import mimingucci.baomau.entity.Comment;
-import mimingucci.baomau.entity.Customer;
-import mimingucci.baomau.exception.CustomerNotFoundException;
+import mimingucci.baomau.entity.User;
 import mimingucci.baomau.exception.PostNotFoundException;
+import mimingucci.baomau.exception.UserNotFoundException;
 import mimingucci.baomau.repository.CommentRepository;
-import mimingucci.baomau.repository.CustomerRepository;
+import mimingucci.baomau.repository.UserRepository;
 import mimingucci.baomau.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,15 +28,21 @@ public class CommentController {
     private CommentRepository commentRepository;
 
     @Autowired
-    private CustomerRepository customerRepository;
+    private UserRepository userRepository;
+
+    public CommentController(CommentService commentService, CommentRepository commentRepository, UserRepository userRepository) {
+        this.commentService = commentService;
+        this.commentRepository = commentRepository;
+        this.userRepository = userRepository;
+    }
 
     @PostMapping(path = "/create")
-    public ResponseEntity<?> createComment(@RequestParam(name = "postid") int postid, @RequestParam(name = "customerid") int customerid, @RequestBody Comment comment){
+    public ResponseEntity<?> createComment(@RequestParam(name = "postid") int postid, @RequestParam(name = "userid") int userid, @RequestBody Comment comment){
         try {
-            return new ResponseEntity<>(commentService.createComment(postid, customerid, comment.getContent()), HttpStatus.CREATED);
+            return new ResponseEntity<>(commentService.createComment(postid, userid, comment.getContent()), HttpStatus.CREATED);
         } catch (PostNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (CustomerNotFoundException e) {
+        } catch (UserNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
@@ -58,36 +64,26 @@ public class CommentController {
     }
 
     @PutMapping(path = "/update/agree/{id}")
-    public ResponseEntity<?> updateAgree(@RequestParam(name = "custommerid") int custommerid, @PathVariable(name = "id") int id){
-        commentService.updateAgree(id, custommerid);
+    public ResponseEntity<?> updateAgree(@RequestParam(name = "userid") int userid, @PathVariable(name = "id") int id) throws UserNotFoundException {
+        commentService.updateAgree(id, userid);
         return new ResponseEntity<>("Da update danh sach agree cua commennt", HttpStatus.OK);
     }
 
     @PutMapping(path = "/update/disagree/{id}")
-    public ResponseEntity<?> updateDisagree(@RequestParam(name = "custommerid") int custommerid, @PathVariable(name = "id") int id){
-        commentService.updateDisagree(id, custommerid);
+    public ResponseEntity<?> updateDisagree(@RequestParam(name = "userid") int userid, @PathVariable(name = "id") int id) throws UserNotFoundException {
+        commentService.updateDisagree(id, userid);
         return new ResponseEntity<>("Da update danh sach disagree cua commennt", HttpStatus.OK);
     }
 
     @GetMapping(path = "/get/allagree/{id}")
     public ResponseEntity<?> getAllAgree(@PathVariable(name = "id") int id){
-        Set<Integer> agree=commentRepository.findById(id).get().getAgree();
-        List<Customer> customers=new ArrayList<>();
-        for(int i : agree){
-            Customer c=customerRepository.findById(i).get();
-            if(c!=null)customers.add(c);
-        }
-        return new ResponseEntity<>(customers, HttpStatus.OK);
+        List<User> users=commentRepository.findById(id).get().getAgree();
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
     @GetMapping(path = "/get/alldisagree/{id}")
     public ResponseEntity<?> getAllDisagree(@PathVariable(name = "id") int id){
-        Set<Integer> disagree=commentRepository.findById(id).get().getDisagree();
-        List<Customer> customers=new ArrayList<>();
-        for(int i : disagree){
-            Customer c=customerRepository.findById(i).get();
-            if(c!=null)customers.add(c);
-        }
-        return new ResponseEntity<>(customers, HttpStatus.OK);
+        List<User> users=commentRepository.findById(id).get().getDisagree();
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 }

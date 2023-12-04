@@ -1,10 +1,10 @@
 package mimingucci.baomau.controller;
 
-import mimingucci.baomau.entity.Customer;
 import mimingucci.baomau.entity.Post;
-import mimingucci.baomau.exception.CustomerNotFoundException;
-import mimingucci.baomau.repository.CustomerRepository;
+import mimingucci.baomau.entity.User;
+import mimingucci.baomau.exception.UserNotFoundException;
 import mimingucci.baomau.repository.PostRepository;
+import mimingucci.baomau.repository.UserRepository;
 import mimingucci.baomau.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,13 +27,19 @@ public class PostController {
     private PostRepository postRepository;
 
     @Autowired
-    private CustomerRepository customerRepository;
+    private UserRepository userRepository;
+
+    public PostController(PostService postService, PostRepository postRepository, UserRepository userRepository) {
+        this.postService = postService;
+        this.postRepository = postRepository;
+        this.userRepository = userRepository;
+    }
 
     @PostMapping(path = "/create")
-    public ResponseEntity<?> createPost(@RequestParam(name = "customerid") int customerid, @RequestBody Post post){
+    public ResponseEntity<?> createPost(@RequestParam(name = "userid") int userid, @RequestBody Post post){
         try {
-            return new ResponseEntity<>(postService.createPost(customerid, post.getHeadline(), post.getComment()), HttpStatus.CREATED);
-        } catch (CustomerNotFoundException e) {
+            return new ResponseEntity<>(postService.createPost(userid, post.getHeadline(), post.getComment()), HttpStatus.CREATED);
+        } catch (UserNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
@@ -60,36 +66,26 @@ public class PostController {
     }
 
     @PutMapping(path = "/update/agree/{id}")
-    public ResponseEntity<?> updateAgree(@RequestParam(name = "customerid") int customerid, @PathVariable(name = "id") int id){
-        postService.updateAgree(id, customerid);
+    public ResponseEntity<?> updateAgree(@RequestParam(name = "userid") int userid, @PathVariable(name = "id") int id){
+        postService.updateAgree(id, userid);
         return ResponseEntity.ok("Da them vao danh sach yeu thich bai post");
     }
 
     @PutMapping(path = "/update/disagree/{id}")
-    public ResponseEntity<?> updateDisagree(@RequestParam(name = "customerid") int customerid, @PathVariable(name = "id") int id){
-        postService.updateDisagree(id, customerid);
+    public ResponseEntity<?> updateDisagree(@RequestParam(name = "userid") int userid, @PathVariable(name = "id") int id){
+        postService.updateDisagree(id, userid);
         return ResponseEntity.ok("Da them vao danh sach khong yeu thich bai post");
     }
 
     @GetMapping(path = "/get/allagree/{id}")
     public ResponseEntity<?> getAllAgree(@PathVariable(name = "id") int id){
-        Set<Integer> agree=postRepository.findById(id).get().getAgree();
-        List<Customer> customers=new ArrayList<>();
-        for(int i : agree){
-            Customer c=customerRepository.findById(i).get();
-            if(c!=null)customers.add(c);
-        }
-        return new ResponseEntity<>(customers, HttpStatus.OK);
+        List<User> users=postRepository.findById(id).get().getAgree();
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
     @GetMapping(path = "/get/alldisagree/{id}")
     public ResponseEntity<?> getAllDisagree(@PathVariable(name = "id") int id){
-        Set<Integer> disagree=postRepository.findById(id).get().getDisagree();
-        List<Customer> customers=new ArrayList<>();
-        for(int i : disagree){
-            Customer c=customerRepository.findById(i).get();
-            if(c!=null)customers.add(c);
-        }
-        return new ResponseEntity<>(customers, HttpStatus.OK);
+        List<User> users=postRepository.findById(id).get().getDisagree();
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 }

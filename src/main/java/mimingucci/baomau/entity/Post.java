@@ -1,7 +1,7 @@
 package mimingucci.baomau.entity;
 
-import jakarta.persistence.*;
 
+import javax.persistence.*;
 import java.util.*;
 
 @Entity
@@ -16,9 +16,23 @@ public class Post {
     @Column(length = 300, nullable = false)
     private String comment;
 
-    private Set<Integer> agree=new HashSet<>();
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    private User author;
 
-    private Set<Integer> disagree=new HashSet<>();
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "post_like",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> agree=new ArrayList<>();
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "post_dislike",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> disagree=new ArrayList<>();
 
     @Column(name = "posted_time", nullable = false)
     private Date postedtime;
@@ -27,7 +41,19 @@ public class Post {
     @JoinColumn(name = "post_id")
     private List<Comment> comments=new ArrayList<>();
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     public Post() {
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Integer getId() {
@@ -54,19 +80,19 @@ public class Post {
         this.comment = comment;
     }
 
-    public Set<Integer> getAgree() {
+    public List<User> getAgree() {
         return agree;
     }
 
-    public void setAgree(Set<Integer> agree) {
+    public void setAgree(List<User> agree) {
         this.agree = agree;
     }
 
-    public Set<Integer> getDisagree() {
+    public List<User> getDisagree() {
         return disagree;
     }
 
-    public void setDisagree(Set<Integer> disagree) {
+    public void setDisagree(List<User> disagree) {
         this.disagree = disagree;
     }
 
@@ -84,5 +110,13 @@ public class Post {
 
     public void setComments(List<Comment> comments) {
         this.comments = comments;
+    }
+
+    public User getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(User author) {
+        this.author = author;
     }
 }

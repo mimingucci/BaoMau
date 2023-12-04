@@ -1,9 +1,9 @@
 package mimingucci.baomau.controller;
 
-import mimingucci.baomau.entity.BaoMau;
-import mimingucci.baomau.exception.BaoMauNotFoundException;
-import mimingucci.baomau.repository.BaoMauRepository;
-import mimingucci.baomau.service.BaoMauService;
+import mimingucci.baomau.entity.User;
+import mimingucci.baomau.exception.UserNotFoundException;
+import mimingucci.baomau.repository.UserRepository;
+import mimingucci.baomau.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,52 +14,57 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/baomau", produces = "application/json")
+@RequestMapping(path = "/user", produces = "application/json")
 @Validated
 public class BaoMauController {
     @Autowired
-    private BaoMauService baoMauService;
+    private UserService userService;
 
     @Autowired
-    private BaoMauRepository baoMauRepository;
+    private UserRepository userRepository;
+
+    public BaoMauController(UserService userService, UserRepository userRepository) {
+        this.userService = userService;
+        this.userRepository = userRepository;
+    }
 
     @GetMapping(path = "/all")
     public ResponseEntity<?> getAll(){
-        List<BaoMau> baoMaus=baoMauRepository.findAll();
-        return ResponseEntity.ok(baoMaus);
+        List<User> users = userRepository.findAll();
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping(path = "/get/{id}")
-    public ResponseEntity<?> getBaoMauById(@PathVariable(name = "id") int id) {
+    public ResponseEntity<?> getUserById(@PathVariable(name = "id") int id) {
         try {
-            BaoMau baoMau=baoMauService.findById(id);
-            return ResponseEntity.ok(baoMau);
-        }catch (BaoMauNotFoundException ex){
+            User user = userService.findById(id);
+            return ResponseEntity.ok(user);
+        }catch (UserNotFoundException ex){
             return (ResponseEntity<?>) ResponseEntity.status(HttpStatus.NOT_FOUND);
         }
     }
 
     @PostMapping(path = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> createBaoMau(@RequestBody BaoMau baoMau){
-         BaoMau bm=baoMauService.createBaoMau(baoMau.getEmail(), baoMau.getPassword(), baoMau.getFirstname(), baoMau.getLastname(), baoMau.getDescription());
-         if(bm==null){
+    public ResponseEntity<?> createUser(@RequestBody User user){
+         User u= userService.createUser(user.getEmail(), user.getPassword(), user.getFirstname(), user.getLastname(), user.getDescription());
+         if(u==null){
              return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
          }
-         return new ResponseEntity<>(bm, HttpStatus.CREATED);
+         return new ResponseEntity<>(u, HttpStatus.CREATED);
     }
 
     @PutMapping(path = "/update/{id}")
-    public ResponseEntity<?> updateBaoMau(@PathVariable(name = "id") int id, @RequestBody BaoMau baoMau){
+    public ResponseEntity<?> updateUser(@PathVariable(name = "id") int id, @RequestBody User user){
         try {
-            return new ResponseEntity<>(baoMauService.updateBaoMau(id, baoMau), HttpStatus.OK);
-        } catch (BaoMauNotFoundException e) {
+            return new ResponseEntity<>(userService.updateUser(id, user), HttpStatus.OK);
+        } catch (UserNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
     @DeleteMapping(path = "/delete/{id}")
-    public ResponseEntity<?> deleteBaoMau(@PathVariable(name = "id") int id){
-        baoMauRepository.deleteById(id);
-        return new ResponseEntity<>("Da xoa bao mau voi id: "+id, HttpStatus.ACCEPTED);
+    public ResponseEntity<?> deleteUser(@PathVariable(name = "id") int id){
+        userRepository.deleteById(id);
+        return new ResponseEntity<>("Da xoa nguoi dung voi id: "+id, HttpStatus.ACCEPTED);
     }
 }
