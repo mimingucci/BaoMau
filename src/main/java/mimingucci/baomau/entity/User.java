@@ -10,37 +10,61 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(length = 128, nullable = false, unique = true)
+
+    @Column(name = "nickname", length = 30, nullable = false, unique = true)
+    private String nickname;
+    @Column(name="email", length = 128, nullable = false, unique = true)
     private String email;
-    @Column(length = 128, nullable = false)
+    @Column(name="password", length = 128, nullable = false)
     private String password;
-    @Column(name = "first_name", nullable = false)
+    @Column(name = "firstname")
     private String firstname;
-    @Column(name = "last_name", nullable = false)
+    @Column(name = "lastname")
     private String lastname;
+
+    @Column(name = "photo")
     private String photo;
-    @Column(length = 2000)
+
+    @Column(name = "rating")
+    private Double rating;
+
+    @Column(name="description", length = 2000)
     private String description;
     private Boolean enabled;
-    @Column(name = "created_name")
+    @Column(name = "createdname")
     private Date createdtime;
 
-    @Column(name = "reset_password_token", length = 30)
+    @Column(name = "resetpasswordtoken", length = 30)
     private String resetpasswordtoken;
 
-    @Column(name = "verification_code", length = 64)
+    @Column(name = "verificationcode", length = 64)
     private String verificationcode;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "user_id")
-    private List<Review> reviews=new ArrayList<>();
+    @JoinColumn(name = "userid")
+    private Set<Review> reviews=new HashSet<>();
 
     @OneToMany(
-            mappedBy = "author",
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<Post> posts = new ArrayList<>();
+    @JoinColumn(name = "userid")
+    private Set<Post> posts = new HashSet<>();
+
+    public Set<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(Set<Comment> comments) {
+        this.comments = comments;
+    }
+
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @JoinColumn(name = "userid")
+    private Set<Comment> comments = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name="user_id")
@@ -49,58 +73,50 @@ public class User {
     private Set<Role> roles=new HashSet<>();
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "authentication_type", length = 10)
+    @Column(name = "authenticationtype", length = 10)
     private AuthenticationType authenticationtype;
 
-    @ManyToMany(mappedBy = "agree")
-    private List<Post> likedposts = new ArrayList<>();
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "user_likedcomment",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "comment_id")
+    )
+    private Set<Comment> likedcomments=new HashSet<>();
 
-    @ManyToMany(mappedBy = "disagree")
-    private List<Post> dislikedposts = new ArrayList<>();
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "user_dislikedcomment",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "comment_id")
+    )
+    private Set<Comment> dislikedcomments=new HashSet<>();
 
-    @ManyToMany(mappedBy = "agree")
-    private List<Comment> likedcomments = new ArrayList<>();
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "user_likedpost",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "post_id")
+    )
+    private Set<Post> likedposts=new HashSet<>();
 
-    @ManyToMany(mappedBy = "disagree")
-    private List<Comment> dislikedcomments = new ArrayList<>();
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "user_dislikedpost",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "post_id")
+    )
+    private Set<Post> dislikedposts=new HashSet<>();
 
-    @ManyToMany(mappedBy = "agree")
-    private List<Review> likedreviews = new ArrayList<>();
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "user_likedreview",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "review_id")
+    )
+    private Set<Review> likedreviews=new HashSet<>();
 
-    @ManyToMany(mappedBy = "disagree")
-    private List<Review> dislikedreviews = new ArrayList<>();
-
-    public List<Comment> getLikedcomments() {
-        return likedcomments;
-    }
-
-    public void setLikedcomments(List<Comment> likedcomments) {
-        this.likedcomments = likedcomments;
-    }
-
-    public List<Comment> getDislikedcomments() {
-        return dislikedcomments;
-    }
-
-    public void setDislikedcomments(List<Comment> dislikedcomments) {
-        this.dislikedcomments = dislikedcomments;
-    }
-
-    public List<Post> getLikedposts() {
-        return likedposts;
-    }
-
-    public void setLikedposts(List<Post> likedposts) {
-        this.likedposts = likedposts;
-    }
-
-    public List<Post> getDislikedposts() {
-        return dislikedposts;
-    }
-
-    public void setDislikedposts(List<Post> dislikedposts) {
-        this.dislikedposts = dislikedposts;
-    }
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "user_dislikedreview",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "review_id")
+    )
+    private Set<Review> dislikedreviews=new HashSet<>();
 
     public AuthenticationType getAuthenticationtype() {
         return authenticationtype;
@@ -115,11 +131,8 @@ public class User {
     }
 
     public void deletereview(Review review){
-        for(int i=0; i<this.reviews.size(); i++){
-            if(this.reviews.get(i).getId()==review.getId()){
-                this.reviews.remove(i);
-                break;
-            }
+        if(this.reviews.contains(review)){
+            this.reviews.remove(review);
         }
     }
 
@@ -141,14 +154,6 @@ public class User {
 
     public void deleteallreview(){
         this.reviews.clear();
-    }
-
-    public List<Review> getReviews() {
-        return reviews;
-    }
-
-    public void setReviews(List<Review> reviews) {
-        this.reviews = reviews;
     }
 
     public User(String email, String password, String firstname, String lastname, String photo) {
@@ -247,58 +252,6 @@ public class User {
         this.roles.add(role);
     }
 
-    public void addLikedPost(Post post){
-        this.likedposts.add(post);
-    }
-
-    public void deleteLikedPost(Post post){
-        for(int i=0; i<this.likedposts.size(); i++){
-            if(this.likedposts.get(i).getId()==post.getId()){
-                this.likedposts.remove(i);
-                break;
-            }
-        }
-    }
-
-    public void addDislikedPost(Post post){
-        this.dislikedposts.add(post);
-    }
-
-    public void deleteDislikedPost(Post post){
-        for(int i=0; i<this.dislikedposts.size(); i++){
-            if(this.dislikedposts.get(i).getId()==post.getId()){
-                this.dislikedposts.remove(i);
-                break;
-            }
-        }
-    }
-
-    public void addLikedComment(Comment comment){
-        this.likedcomments.add(comment);
-    }
-
-    public void deleteLikedComment(Comment comment){
-        for(int i=0; i<this.likedcomments.size(); i++){
-            if(this.likedcomments.get(i).getId()==comment.getId()){
-                this.likedcomments.remove(i);
-                break;
-            }
-        }
-    }
-
-    public void addDislikedComment(Comment comment){
-        this.dislikedcomments.add(comment);
-    }
-
-    public void deleteDislikedComment(Comment comment){
-        for(int i=0; i<this.dislikedcomments.size(); i++){
-            if(this.dislikedcomments.get(i).getId()==comment.getId()){
-                this.dislikedcomments.remove(i);
-                break;
-            }
-        }
-    }
-
     public boolean hasRole(String roleName) {
         Iterator<Role> iterator = roles.iterator();
 
@@ -321,39 +274,125 @@ public class User {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof User user)) return false;
-        return getEmail().equals(user.getEmail()) && getFirstname().equals(user.getFirstname()) && getLastname().equals(user.getLastname());
+        return getNickname().equals(user.getNickname());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getEmail(), getFirstname(), getLastname());
-    }
-
-    public List<Post> getPosts() {
-        return posts;
-    }
-
-    public void setPosts(List<Post> posts) {
-        this.posts = posts;
-    }
-
-    public List<Review> getLikedreviews() {
-        return likedreviews;
-    }
-
-    public void setLikedreviews(List<Review> likedreviews) {
-        this.likedreviews = likedreviews;
-    }
-
-    public List<Review> getDislikedreviews() {
-        return dislikedreviews;
-    }
-
-    public void setDislikedreviews(List<Review> dislikedreviews) {
-        this.dislikedreviews = dislikedreviews;
+        return Objects.hash(getNickname());
     }
 
     public void addPost(Post post){
         this.posts.add(post);
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public Set<Review> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(Set<Review> reviews) {
+        this.reviews = reviews;
+    }
+
+    public Set<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(Set<Post> posts) {
+        this.posts = posts;
+    }
+
+    public Set<Comment> getLikedcomments() {
+        return likedcomments;
+    }
+
+    public void setLikedcomments(Set<Comment> likedcomments) {
+        this.likedcomments = likedcomments;
+    }
+
+    public Set<Comment> getDislikedcomments() {
+        return dislikedcomments;
+    }
+
+    public void setDislikedcomments(Set<Comment> dislikedcomments) {
+        this.dislikedcomments = dislikedcomments;
+    }
+
+    public Set<Post> getLikedposts() {
+        return likedposts;
+    }
+
+    public void setLikedposts(Set<Post> likedposts) {
+        this.likedposts = likedposts;
+    }
+
+    public Set<Post> getDislikedposts() {
+        return dislikedposts;
+    }
+
+    public void setDislikedposts(Set<Post> dislikedposts) {
+        this.dislikedposts = dislikedposts;
+    }
+
+    public Set<Review> getLikedreviews() {
+        return likedreviews;
+    }
+
+    public void setLikedreviews(Set<Review> likedreviews) {
+        this.likedreviews = likedreviews;
+    }
+
+    public Set<Review> getDislikedreviews() {
+        return dislikedreviews;
+    }
+
+    public void setDislikedreviews(Set<Review> dislikedreviews) {
+        this.dislikedreviews = dislikedreviews;
+    }
+
+    public void addLikedComment(Comment comment){
+        this.dislikedcomments.remove(comment);
+        this.likedcomments.add(comment);
+    }
+
+    public void addDislikedComment(Comment comment){
+        this.likedcomments.remove(comment);
+        this.dislikedcomments.add(comment);
+    }
+
+    public void addLikedPost(Post post){
+        this.dislikedposts.remove(post);
+        this.likedposts.add(post);
+    }
+
+    public void addDislikedPost(Post post){
+        this.likedposts.remove(post);
+        this.dislikedposts.add(post);
+    }
+
+    public void addLikedReview(Review review){
+        this.dislikedreviews.remove(review);
+        this.likedreviews.add(review);
+    }
+
+    public void addDislikedReview(Review review){
+        this.likedreviews.remove(review);
+        this.dislikedreviews.add(review);
+    }
+
+    public Double getRating() {
+        return rating;
+    }
+
+    public void setRating(Double rating) {
+        this.rating = rating;
     }
 }

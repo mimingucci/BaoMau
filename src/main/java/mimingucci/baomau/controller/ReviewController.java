@@ -1,6 +1,7 @@
 package mimingucci.baomau.controller;
 
 import mimingucci.baomau.entity.Review;
+import mimingucci.baomau.exception.ReviewNotFoundException;
 import mimingucci.baomau.exception.UserNotFoundException;
 import mimingucci.baomau.repository.ReviewRepository;
 import mimingucci.baomau.service.ReviewService;
@@ -9,6 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/review")
@@ -26,12 +30,18 @@ public class ReviewController {
     }
 
     @PostMapping(path = "/create")
-    public ResponseEntity<?> createReview(@RequestParam int authorid, @RequestParam int userid, @RequestBody Review review){
+    public ResponseEntity<?> createReview(@RequestParam(name = "authornickname") String authornickname, @RequestParam(name = "usernickname") String usernickname, @RequestBody Review review){
         try {
-            return new ResponseEntity<>(reviewService.createReview(review.getHeadline(), review.getComment(), review.getRating(), authorid, userid), HttpStatus.CREATED);
-        } catch (UserNotFoundException e) {
+            return new ResponseEntity<>(reviewService.createReview(review.getHeadline(), review.getContent(), review.getRating(), authornickname, usernickname), HttpStatus.CREATED);
+        } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @GetMapping(path = "/get/all")
+    public ResponseEntity<?> getAll(){
+        Set<Review> reviews=new HashSet<>(reviewRepository.findAll());
+        return new ResponseEntity<>(reviews, HttpStatus.ACCEPTED);
     }
 
     @GetMapping(path = "/get/{id}")
@@ -47,5 +57,25 @@ public class ReviewController {
     public ResponseEntity<?> deleteReview(@PathVariable(name = "id") int id){
         reviewRepository.deleteById(id);
         return new ResponseEntity<>("Da xoa review voi id: "+id, HttpStatus.OK);
+    }
+
+    @PutMapping(path = "/update/agree/{id}")
+    public ResponseEntity<?> updateAgree(@RequestParam(name = "nickname") String nickname, @PathVariable(name = "id") int id) throws UserNotFoundException {
+        try {
+            reviewService.updateAgree(id, nickname);
+        } catch (ReviewNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("Da update danh sach agree cua review", HttpStatus.OK);
+    }
+
+    @PutMapping(path = "/update/disagree/{id}")
+    public ResponseEntity<?> updateDisagree(@RequestParam(name = "nickname") String nickname, @PathVariable(name = "id") int id) throws UserNotFoundException {
+        try {
+            reviewService.updateDisagree(id, nickname);
+        } catch (ReviewNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("Da update danh sach disagree cua review", HttpStatus.OK);
     }
 }

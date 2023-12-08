@@ -12,23 +12,44 @@ public class Comment {
     private Integer id;
     @Column(name = "content", nullable = false)
     private String content;
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "comment_like",
             joinColumns = @JoinColumn(name = "comment_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> agree=new ArrayList<>();
-    @ManyToMany(cascade = CascadeType.ALL)
+    private Set<UserDTO> agree=new HashSet<>();
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "comment_dislike",
             joinColumns = @JoinColumn(name = "comment_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> disagree=new ArrayList<>();
-    @Column(name = "comment_time", nullable = false)
+    private Set<UserDTO> disagree=new HashSet<>();
+    @Column(name = "comment_time")
     private Date commenttime;
-    @ManyToOne
-    @JoinColumn(name = "author_id")
-    private User author;
+
+    private String author;
+
+    private Integer post;
+
+    public Integer getPost() {
+        return post;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Comment comment)) return false;
+        return getId().equals(comment.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
+
+    public void setPost(Integer post) {
+        this.post = post;
+    }
 
     public Comment() {
     }
@@ -45,22 +66,6 @@ public class Comment {
         return content;
     }
 
-    public List<User> getAgree() {
-        return agree;
-    }
-
-    public void setAgree(List<User> agree) {
-        this.agree = agree;
-    }
-
-    public List<User> getDisagree() {
-        return disagree;
-    }
-
-    public void setDisagree(List<User> disagree) {
-        this.disagree = disagree;
-    }
-
     public void setContent(String content) {
         this.content = content;
     }
@@ -74,19 +79,19 @@ public class Comment {
         this.commenttime = commenttime;
     }
 
-    public User getAuthor() {
+    public String getAuthor() {
         return author;
     }
 
-    public void setAuthor(User author) {
+    public void setAuthor(String author) {
         this.author = author;
     }
 
-    public void addAgree(User user){
+    public void addAgree(UserDTO user){
         this.agree.add(user);
     }
 
-    public void addDisagree(User user){
+    public void addDisagree(UserDTO user){
         this.disagree.add(user);
     }
 
@@ -96,5 +101,21 @@ public class Comment {
 
     public void deleteDisagree(int id){
         this.disagree.remove(id);
+    }
+
+    public Set<UserDTO> getAgree() {
+        return agree;
+    }
+
+    public void setAgree(Set<UserDTO> agree) {
+        this.agree = agree;
+    }
+
+    public Set<UserDTO> getDisagree() {
+        return disagree;
+    }
+
+    public void setDisagree(Set<UserDTO> disagree) {
+        this.disagree = disagree;
     }
 }

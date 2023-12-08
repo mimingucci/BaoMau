@@ -9,51 +9,39 @@ import java.util.*;
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Integer id;
+    private Integer id;
     @Column(length = 128, nullable = false)
     private String headline;
 
     @Column(length = 300, nullable = false)
-    private String comment;
+    private String content;
 
-    @ManyToOne
-    @JoinColumn(name = "author_id")
-    private User author;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    private String author;
+
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "post_like",
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> agree=new ArrayList<>();
+    private Set<UserDTO> agree=new HashSet<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "post_dislike",
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> disagree=new ArrayList<>();
+    private Set<UserDTO> disagree=new HashSet<>();
 
-    @Column(name = "posted_time", nullable = false)
+    @Column(name = "posted_time")
     private Date postedtime;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "post_id")
-    private List<Comment> comments=new ArrayList<>();
+    private Set<Comment> comments=new HashSet<>();
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id")
-    private User user;
 
     public Post() {
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     public Integer getId() {
@@ -72,28 +60,12 @@ public class Post {
         this.headline = headline;
     }
 
-    public String getComment() {
-        return comment;
+    public String getContent() {
+        return content;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public List<User> getAgree() {
-        return agree;
-    }
-
-    public void setAgree(List<User> agree) {
-        this.agree = agree;
-    }
-
-    public List<User> getDisagree() {
-        return disagree;
-    }
-
-    public void setDisagree(List<User> disagree) {
-        this.disagree = disagree;
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public Date getPostedtime() {
@@ -104,19 +76,47 @@ public class Post {
         this.postedtime = postedtime;
     }
 
-    public List<Comment> getComments() {
-        return comments;
-    }
-
-    public void setComments(List<Comment> comments) {
-        this.comments = comments;
-    }
-
-    public User getAuthor() {
+    public String getAuthor() {
         return author;
     }
 
-    public void setAuthor(User author) {
+    public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public Set<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(Set<Comment> comments) {
+        this.comments = comments;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Post post)) return false;
+        return getId().equals(post.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
+
+    public Set<UserDTO> getAgree() {
+        return agree;
+    }
+
+    public void setAgree(Set<UserDTO> agree) {
+        this.agree = agree;
+    }
+
+    public Set<UserDTO> getDisagree() {
+        return disagree;
+    }
+
+    public void setDisagree(Set<UserDTO> disagree) {
+        this.disagree = disagree;
     }
 }

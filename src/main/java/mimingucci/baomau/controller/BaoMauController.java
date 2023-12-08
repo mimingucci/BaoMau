@@ -1,7 +1,9 @@
 package mimingucci.baomau.controller;
 
 import mimingucci.baomau.entity.User;
+import mimingucci.baomau.entity.UserDTO;
 import mimingucci.baomau.exception.UserNotFoundException;
+import mimingucci.baomau.repository.UserDTORepository;
 import mimingucci.baomau.repository.UserRepository;
 import mimingucci.baomau.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/user", produces = "application/json")
+@RequestMapping(path = "/user")
 @Validated
 public class BaoMauController {
     @Autowired
@@ -23,9 +25,13 @@ public class BaoMauController {
     @Autowired
     private UserRepository userRepository;
 
-    public BaoMauController(UserService userService, UserRepository userRepository) {
+    @Autowired
+    private UserDTORepository userDTORepository;
+
+    public BaoMauController(UserService userService, UserRepository userRepository, UserDTORepository userDTORepository) {
         this.userService = userService;
         this.userRepository = userRepository;
+        this.userDTORepository = userDTORepository;
     }
 
     @GetMapping(path = "/all")
@@ -34,10 +40,10 @@ public class BaoMauController {
         return ResponseEntity.ok(users);
     }
 
-    @GetMapping(path = "/get/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable(name = "id") int id) {
+    @GetMapping(path = "/get/{nickname}")
+    public ResponseEntity<?> getUserByNickname(@PathVariable(name = "nickname") String nickname) {
         try {
-            User user = userService.findById(id);
+            User user = userService.findUserByNickname(nickname);
             return ResponseEntity.ok(user);
         }catch (UserNotFoundException ex){
             return (ResponseEntity<?>) ResponseEntity.status(HttpStatus.NOT_FOUND);
@@ -46,25 +52,36 @@ public class BaoMauController {
 
     @PostMapping(path = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createUser(@RequestBody User user){
-         User u= userService.createUser(user.getEmail(), user.getPassword(), user.getFirstname(), user.getLastname(), user.getDescription());
+         User u= userService.createUser(user.getNickname(), user.getEmail(), user.getPassword(), user.getFirstname(), user.getLastname(), user.getDescription());
          if(u==null){
              return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
          }
          return new ResponseEntity<>(u, HttpStatus.CREATED);
     }
 
-    @PutMapping(path = "/update/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable(name = "id") int id, @RequestBody User user){
+    @PutMapping(path = "/update/{nickname}")
+    public ResponseEntity<?> updateUser(@PathVariable(name = "nickname") String nickname, @RequestBody User user){
         try {
-            return new ResponseEntity<>(userService.updateUser(id, user), HttpStatus.OK);
+            return new ResponseEntity<>(userService.updateUser(nickname, user), HttpStatus.OK);
         } catch (UserNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
-    @DeleteMapping(path = "/delete/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable(name = "id") int id){
-        userRepository.deleteById(id);
-        return new ResponseEntity<>("Da xoa nguoi dung voi id: "+id, HttpStatus.ACCEPTED);
+    @DeleteMapping(path = "/delete/{nickname}")
+    public ResponseEntity<?> deleteUser(@PathVariable(name = "nickname") String nickname){
+        userRepository.deleteByNickname(nickname);
+        userDTORepository.deleteByNickname(nickname);
+        return new ResponseEntity<>("Da xoa nguoi dung voi nickname: "+nickname, HttpStatus.ACCEPTED);
+    }
+
+    @PutMapping(path = "/update/enabled/{status}")
+    public ResponseEntity<?> updateEnabled(@RequestParam(name = "nickname") String nickname, @PathVariable(name = "status") Boolean enabled){
+        try {
+            userService.updateEnabled(nickname, enabled);
+            return new ResponseEntity<>("Da update enable staus cua nguoi dung voi nickname: "+nickname, HttpStatus.ACCEPTED);
+        } catch (UserNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 }

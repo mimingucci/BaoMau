@@ -9,44 +9,55 @@ import java.util.*;
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Integer id;
-    @Column(length = 128, nullable = false)
+    private Integer id;
+    @Column(name = "headline",length = 128, nullable = false)
     private String headline;
 
-    @Column(length = 300, nullable = false)
-    private String comment;
+    @Column(name="content", length = 300, nullable = false)
+    private String content;
 
+    @Column(name = "rating")
     private int rating;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "review_like",
             joinColumns = @JoinColumn(name = "review_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> agree=new ArrayList<>();
+    private Set<UserDTO> agree=new HashSet<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "review_dislike",
             joinColumns = @JoinColumn(name = "review_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> disagree=new ArrayList<>();
+    private Set<UserDTO> disagree=new HashSet<>();
 
-    @Column(name = "review_time", nullable = false)
+    @Column(name = "review_time")
     private Date reviewtime;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User author;
+    @Column(name = "author", nullable = false)
+    private String author;
+
+    @Column(name = "user", nullable = false)
+    private String user;
 
     public Review() {
     }
 
-    public User getAuthor() {
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public String getAuthor() {
         return author;
     }
 
-    public void setAuthor(User author) {
+    public void setAuthor(String author) {
         this.author = author;
     }
 
@@ -66,14 +77,6 @@ public class Review {
         this.headline = headline;
     }
 
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
     public int getRating() {
         return rating;
     }
@@ -82,27 +85,71 @@ public class Review {
         this.rating = rating;
     }
 
-    public List<User> getAgree() {
-        return agree;
-    }
-
-    public void setAgree(List<User> agree) {
-        this.agree = agree;
-    }
-
-    public List<User> getDisagree() {
-        return disagree;
-    }
-
-    public void setDisagree(List<User> disagree) {
-        this.disagree = disagree;
-    }
-
     public Date getReviewtime() {
         return reviewtime;
     }
 
     public void setReviewtime(Date reviewtime) {
         this.reviewtime = reviewtime;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Set<UserDTO> getAgree() {
+        return agree;
+    }
+
+    public void setAgree(Set<UserDTO> agree) {
+        this.agree = agree;
+    }
+
+    public Set<UserDTO> getDisagree() {
+        return disagree;
+    }
+
+    public void setDisagree(Set<UserDTO> disagree) {
+        this.disagree = disagree;
+    }
+
+
+
+    public void addAgree(UserDTO dto) {
+        this.agree.add(dto);
+        if(this.disagree.contains(dto)){
+            this.disagree.remove(dto);
+        }
+    }
+
+    public void addDisagree(UserDTO dto) {
+        this.disagree.add(dto);
+        if(this.agree.contains(dto)){
+            this.agree.remove(dto);
+        }
+    }
+
+    public void deleteLike(UserDTO dto){
+        this.agree.remove(dto);
+    }
+
+    public void deleteDislike(UserDTO dto){
+        this.disagree.remove(dto);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Review review)) return false;
+        return getAuthor().equals(review.getAuthor()) && getUser().equals(review.getUser());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getAuthor(), getUser());
     }
 }

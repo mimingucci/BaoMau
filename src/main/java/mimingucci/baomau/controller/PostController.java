@@ -2,6 +2,7 @@ package mimingucci.baomau.controller;
 
 import mimingucci.baomau.entity.Post;
 import mimingucci.baomau.entity.User;
+import mimingucci.baomau.entity.UserDTO;
 import mimingucci.baomau.exception.UserNotFoundException;
 import mimingucci.baomau.repository.PostRepository;
 import mimingucci.baomau.repository.UserRepository;
@@ -13,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,9 +38,9 @@ public class PostController {
     }
 
     @PostMapping(path = "/create")
-    public ResponseEntity<?> createPost(@RequestParam(name = "userid") int userid, @RequestBody Post post){
+    public ResponseEntity<?> createPost(@RequestParam(name = "nickname") String nickname, @RequestBody Post post){
         try {
-            return new ResponseEntity<>(postService.createPost(userid, post.getHeadline(), post.getComment()), HttpStatus.CREATED);
+            return new ResponseEntity<>(postService.createPost(nickname, post.getHeadline(), post.getContent()), HttpStatus.CREATED);
         } catch (UserNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
@@ -54,9 +56,15 @@ public class PostController {
         }
     }
 
+    @GetMapping(path = "/get/all")
+    public ResponseEntity<?> getAll(){
+        Set<Post> posts=new HashSet<>(postRepository.findAll());
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
+
     @PutMapping(path = "/update/{id}")
     public ResponseEntity<?> updatePost(@PathVariable(name = "id") int id, @RequestBody Post post){
-         return new ResponseEntity<>(postService.updatePost(id, post.getHeadline(), post.getComment()), HttpStatus.OK);
+         return new ResponseEntity<>(postService.updatePost(id, post.getHeadline(), post.getContent()), HttpStatus.OK);
     }
 
     @DeleteMapping(path = "/delete/{id}")
@@ -66,26 +74,26 @@ public class PostController {
     }
 
     @PutMapping(path = "/update/agree/{id}")
-    public ResponseEntity<?> updateAgree(@RequestParam(name = "userid") int userid, @PathVariable(name = "id") int id){
-        postService.updateAgree(id, userid);
+    public ResponseEntity<?> updateAgree(@RequestParam(name = "nickname") String nickname, @PathVariable(name = "id") int id){
+        postService.updateAgree(id, nickname);
         return ResponseEntity.ok("Da them vao danh sach yeu thich bai post");
     }
 
     @PutMapping(path = "/update/disagree/{id}")
-    public ResponseEntity<?> updateDisagree(@RequestParam(name = "userid") int userid, @PathVariable(name = "id") int id){
-        postService.updateDisagree(id, userid);
+    public ResponseEntity<?> updateDisagree(@RequestParam(name = "nickname") String nickname, @PathVariable(name = "id") int id){
+        postService.updateDisagree(id, nickname);
         return ResponseEntity.ok("Da them vao danh sach khong yeu thich bai post");
     }
 
     @GetMapping(path = "/get/allagree/{id}")
     public ResponseEntity<?> getAllAgree(@PathVariable(name = "id") int id){
-        List<User> users=postRepository.findById(id).get().getAgree();
+        Set<UserDTO> users=postRepository.findById(id).get().getAgree();
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
     @GetMapping(path = "/get/alldisagree/{id}")
     public ResponseEntity<?> getAllDisagree(@PathVariable(name = "id") int id){
-        List<User> users=postRepository.findById(id).get().getDisagree();
+        Set<UserDTO> users=postRepository.findById(id).get().getDisagree();
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 }
