@@ -1,8 +1,10 @@
 package mimingucci.baomau.controller;
 
+import mimingucci.baomau.entity.State;
 import mimingucci.baomau.entity.User;
 import mimingucci.baomau.entity.UserDTO;
 import mimingucci.baomau.exception.UserNotFoundException;
+import mimingucci.baomau.repository.StateRepository;
 import mimingucci.baomau.repository.UserDTORepository;
 import mimingucci.baomau.repository.UserRepository;
 import mimingucci.baomau.service.UserService;
@@ -27,6 +29,9 @@ public class BaoMauController {
 
     @Autowired
     private UserDTORepository userDTORepository;
+
+    @Autowired
+    private StateRepository stateRepository;
 
     public BaoMauController(UserService userService, UserRepository userRepository, UserDTORepository userDTORepository) {
         this.userService = userService;
@@ -66,6 +71,15 @@ public class BaoMauController {
         } catch (UserNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
+    }
+
+    @PutMapping(path = "/update/state/{nickname}")
+    public ResponseEntity<?> updateStateUser(@PathVariable(name = "nickname") String nickname, @RequestParam(name = "state") String state){
+        State state1=stateRepository.findByName(state);
+        User user=userRepository.findByNickname(nickname);
+        user.setState(state1);
+        User savedUser=userRepository.save(user);
+        return new ResponseEntity<>(savedUser, HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping(path = "/delete/{nickname}")

@@ -118,6 +118,10 @@ public class User {
     )
     private Set<Review> dislikedreviews=new HashSet<>();
 
+    @ManyToOne
+    @JoinColumn(name = "country_id")
+    protected State state;
+
     public AuthenticationType getAuthenticationtype() {
         return authenticationtype;
     }
@@ -394,5 +398,13 @@ public class User {
 
     public void setRating(Double rating) {
         this.rating = rating;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
     }
 }
