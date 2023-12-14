@@ -1,5 +1,6 @@
 package mimingucci.baomau.controller;
 
+import mimingucci.baomau.entity.Message;
 import mimingucci.baomau.entity.State;
 import mimingucci.baomau.entity.User;
 import mimingucci.baomau.entity.UserDTO;
@@ -7,6 +8,7 @@ import mimingucci.baomau.exception.UserNotFoundException;
 import mimingucci.baomau.repository.StateRepository;
 import mimingucci.baomau.repository.UserDTORepository;
 import mimingucci.baomau.repository.UserRepository;
+import mimingucci.baomau.service.MessageService;
 import mimingucci.baomau.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,10 +35,15 @@ public class BaoMauController {
     @Autowired
     private StateRepository stateRepository;
 
-    public BaoMauController(UserService userService, UserRepository userRepository, UserDTORepository userDTORepository) {
+    @Autowired
+    private MessageService messageService;
+
+    public BaoMauController(UserService userService, UserRepository userRepository, UserDTORepository userDTORepository, StateRepository stateRepository, MessageService messageService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.userDTORepository = userDTORepository;
+        this.stateRepository = stateRepository;
+        this.messageService = messageService;
     }
 
     @GetMapping(path = "/all")
@@ -80,6 +87,16 @@ public class BaoMauController {
         user.setState(state1);
         User savedUser=userRepository.save(user);
         return new ResponseEntity<>(savedUser, HttpStatus.ACCEPTED);
+    }
+
+    @PutMapping(path = "/update/message/create")
+    public ResponseEntity<?> createMessage(@RequestBody Message message){
+        try {
+            messageService.addMessage(message);
+            return new ResponseEntity<>("Da tao message", HttpStatus.CREATED);
+        } catch (UserNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping(path = "/delete/{nickname}")

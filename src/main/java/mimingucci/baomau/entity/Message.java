@@ -2,6 +2,7 @@ package mimingucci.baomau.entity;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Objects;
 
 @Entity
 @Table(name = "message")
@@ -59,5 +60,17 @@ public class Message {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Message message)) return false;
+        return getContent().equals(message.getContent()) && getTime().equals(message.getTime()) && getRecipient().equals(message.getRecipient()) && getAuthor().equals(message.getAuthor());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getContent(), getTime(), getRecipient(), getAuthor());
     }
 }
