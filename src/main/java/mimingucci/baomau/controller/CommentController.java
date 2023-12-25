@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/comment")
 @Validated
 public class CommentController {

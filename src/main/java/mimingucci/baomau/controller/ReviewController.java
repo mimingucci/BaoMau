@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/review")
 @Validated
 public class ReviewController {
