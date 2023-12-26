@@ -8,21 +8,41 @@ import mimingucci.baomau.exception.UserNotFoundException;
 import mimingucci.baomau.repository.UserDTORepository;
 import mimingucci.baomau.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
+
+import java.util.*;
 
 @Service
 @Transactional
 public class UserService {
+
+    public static final int USER_PER_PAGE=100;
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private UserDTORepository userDTORepository;
+
+    public Page<User> listByRating(int pageNum){
+        Pageable pageable= PageRequest.of(pageNum-1, USER_PER_PAGE);
+        return userRepository.listByRating(pageable);
+    }
+
+    public List<User> topContrubutions(){
+        List<User> users=userRepository.findAll();
+        Collections.sort(users, new Comparator<User>() {
+            @Override
+            public int compare(User o1, User o2) {
+                return o2.getPosts().size()-o1.getPosts().size();
+            }
+        });
+        return users.subList(0, Math.min(10, users.size()));
+    }
 
     public UserService(UserRepository userRepository, UserDTORepository userDTORepository) {
         this.userRepository = userRepository;
@@ -144,5 +164,11 @@ public class UserService {
         }
         user.setEnabled(enabled);
         userRepository.save(user);
+    }
+
+    public Page<User> search(String keyword, int pageNum) {
+        Pageable pageable = PageRequest.of(pageNum - 1, USER_PER_PAGE);
+        return userRepository.search(keyword, pageable);
+
     }
 }

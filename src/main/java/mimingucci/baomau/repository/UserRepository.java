@@ -2,6 +2,8 @@ package mimingucci.baomau.repository;
 
 import mimingucci.baomau.entity.AuthenticationType;
 import mimingucci.baomau.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -42,4 +44,13 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("select i from User i where i.verificationcode = ?1")
     public User findByVerificationcode(String code);
+
+    @Query("SELECT u FROM User u WHERE u.enabled = true "
+            + " ORDER BY u.rating DESC")
+    public Page<User> listByRating(Pageable pageable);
+
+    @Query(value = "SELECT * FROM user WHERE enabled = true AND "
+            + "MATCH(nickname, firstname, lastname, email) AGAINST (?1)",
+            nativeQuery = true)
+    public Page<User> search(String keyword, Pageable pageable);
 }

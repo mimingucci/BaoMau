@@ -53,6 +53,16 @@ public class BaoMauController {
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping(path = "/rating/{pageNum}")
+    public ResponseEntity<?> getByRating(@PathVariable(name = "pageNum") int pageNum){
+        return new ResponseEntity<>(userService.listByRating(pageNum), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/search")
+    public ResponseEntity<?> search(@RequestParam(name = "query") String keyword){
+        return new ResponseEntity<>(userService.search(keyword, 1), HttpStatus.OK);
+    }
+
     @GetMapping(path = "/get/{nickname}")
     public ResponseEntity<?> getUserByNickname(@PathVariable(name = "nickname") String nickname) {
         try {
@@ -61,6 +71,11 @@ public class BaoMauController {
         }catch (UserNotFoundException ex){
             return (ResponseEntity<?>) ResponseEntity.status(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping(path = "/topcontributors")
+    public ResponseEntity<?> getTopContributors(){
+        return new ResponseEntity<>(userService.topContrubutions(), HttpStatus.OK);
     }
 
     @PostMapping(path = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
