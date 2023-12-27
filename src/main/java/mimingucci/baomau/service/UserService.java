@@ -169,6 +169,13 @@ public class UserService {
     public Page<User> search(String keyword, int pageNum) {
         Pageable pageable = PageRequest.of(pageNum - 1, USER_PER_PAGE);
         return userRepository.search(keyword, pageable);
+    }
 
+    public boolean checkLoginedUser(String nickname, String password){
+        User user=userRepository.findByNickname(nickname);
+        if(user==null || !user.getPassword().equals(password)){
+            return false;
+        }
+        return true;
     }
 }

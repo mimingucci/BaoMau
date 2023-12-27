@@ -17,10 +17,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@CrossOrigin
+@CrossOrigin("*")
 @RequestMapping(path = "/user")
 @Validated
 public class BaoMauController {
@@ -47,8 +52,29 @@ public class BaoMauController {
         this.messageService = messageService;
     }
 
+    @PostMapping(path = "/login")
+    public ResponseEntity<?> login(@RequestParam(name = "nickname") String nickname, @RequestParam(name = "password") String password){
+        if(!checkLoginedUser(nickname, password)){
+            return new ResponseEntity<>("Login Info Not Exists", HttpStatus.BAD_REQUEST);
+        }
+        Map<String, String> cookies=new HashMap<>();
+        cookies.put(nickname, String.valueOf(24*60*60*24));
+        cookies.put(password, String.valueOf(24*60*60*24));
+        cookies.put("nickname", nickname);
+        cookies.put("password", password);
+        return new ResponseEntity<>(cookies, HttpStatus.OK);
+    }
+
+    private boolean checkLoginedUser(String nickname, String password){
+        return userService.checkLoginedUser(nickname, password);
+    }
+
     @GetMapping(path = "/all")
-    public ResponseEntity<?> getAll(){
+    public ResponseEntity<?> getAll(HttpServletRequest request){
+//        Boolean isLogined=checkLoginedUser(request);
+//        if(!isLogined){
+//            return new ResponseEntity<>("User must login to continue", HttpStatus.BAD_REQUEST);
+//        }
         List<User> users = userRepository.findAll();
         return ResponseEntity.ok(users);
     }
@@ -79,7 +105,11 @@ public class BaoMauController {
     }
 
     @PostMapping(path = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> createUser(@RequestBody User user){
+    public ResponseEntity<?> createUser(@RequestBody User user, HttpServletRequest request){
+//         Boolean isLogined=checkLoginedUser(request);
+//         if(!isLogined){
+//            return new ResponseEntity<>("User must login to continue", HttpStatus.BAD_REQUEST);
+//         }
          User u= userService.createUser(user.getNickname(), user.getEmail(), user.getPassword(), user.getFirstname(), user.getLastname(), user.getDescription());
          if(u==null){
              return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
@@ -88,7 +118,11 @@ public class BaoMauController {
     }
 
     @PutMapping(path = "/update/{nickname}")
-    public ResponseEntity<?> updateUser(@PathVariable(name = "nickname") String nickname, @RequestBody User user){
+    public ResponseEntity<?> updateUser(@PathVariable(name = "nickname") String nickname, @RequestBody User user, HttpServletRequest request){
+//        Boolean isLogined=checkLoginedUser(request);
+//        if(!isLogined){
+//            return new ResponseEntity<>("User must login to continue", HttpStatus.BAD_REQUEST);
+//        }
         try {
             return new ResponseEntity<>(userService.updateUser(nickname, user), HttpStatus.OK);
         } catch (UserNotFoundException e) {
@@ -97,7 +131,11 @@ public class BaoMauController {
     }
 
     @PutMapping(path = "/update/state/{nickname}")
-    public ResponseEntity<?> updateStateUser(@PathVariable(name = "nickname") String nickname, @RequestParam(name = "state") String state){
+    public ResponseEntity<?> updateStateUser(@PathVariable(name = "nickname") String nickname, @RequestParam(name = "state") String state, HttpServletRequest request){
+//        Boolean isLogined=checkLoginedUser(request);
+//        if(!isLogined){
+//            return new ResponseEntity<>("User must login to continue", HttpStatus.BAD_REQUEST);
+//        }
         State state1=stateRepository.findByName(state);
         User user=userRepository.findByNickname(nickname);
         user.setState(state1);
@@ -106,7 +144,11 @@ public class BaoMauController {
     }
 
     @PutMapping(path = "/update/message/create")
-    public ResponseEntity<?> createMessage(@RequestBody Message message){
+    public ResponseEntity<?> createMessage(@RequestBody Message message, HttpServletRequest request){
+//        Boolean isLogined=checkLoginedUser(request);
+//        if(!isLogined){
+//            return new ResponseEntity<>("User must login to continue", HttpStatus.BAD_REQUEST);
+//        }
         try {
             messageService.addMessage(message);
             return new ResponseEntity<>("Da tao message", HttpStatus.CREATED);
@@ -116,14 +158,22 @@ public class BaoMauController {
     }
 
     @DeleteMapping(path = "/delete/{nickname}")
-    public ResponseEntity<?> deleteUser(@PathVariable(name = "nickname") String nickname){
+    public ResponseEntity<?> deleteUser(@PathVariable(name = "nickname") String nickname, HttpServletRequest request){
+//        Boolean isLogined=checkLoginedUser(request);
+//        if(!isLogined){
+//            return new ResponseEntity<>("User must login to continue", HttpStatus.BAD_REQUEST);
+//        }
         userRepository.deleteByNickname(nickname);
         userDTORepository.deleteByNickname(nickname);
         return new ResponseEntity<>("Da xoa nguoi dung voi nickname: "+nickname, HttpStatus.ACCEPTED);
     }
 
     @PutMapping(path = "/update/enabled/{status}")
-    public ResponseEntity<?> updateEnabled(@RequestParam(name = "nickname") String nickname, @PathVariable(name = "status") Boolean enabled){
+    public ResponseEntity<?> updateEnabled(@RequestParam(name = "nickname") String nickname, @PathVariable(name = "status") Boolean enabled, HttpServletRequest request){
+//        Boolean isLogined=checkLoginedUser(request);
+//        if(!isLogined){
+//            return new ResponseEntity<>("User must login to continue", HttpStatus.BAD_REQUEST);
+//        }
         try {
             userService.updateEnabled(nickname, enabled);
             return new ResponseEntity<>("Da update enable staus cua nguoi dung voi nickname: "+nickname, HttpStatus.ACCEPTED);
