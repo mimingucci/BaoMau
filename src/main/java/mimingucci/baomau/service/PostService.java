@@ -4,6 +4,8 @@ import mimingucci.baomau.entity.Comment;
 import mimingucci.baomau.entity.Post;
 import mimingucci.baomau.entity.User;
 import mimingucci.baomau.entity.UserDTO;
+import mimingucci.baomau.exception.DislikeBeforeException;
+import mimingucci.baomau.exception.LikeBeforeException;
 import mimingucci.baomau.exception.UserNotFoundException;
 import mimingucci.baomau.repository.PostRepository;
 import mimingucci.baomau.repository.UserRepository;
@@ -69,27 +71,45 @@ public class PostService {
         return post;
     }
 
-    public void updateAgree(int postid, String nickname){
+    public void updateAgree(int postid, String nickname) throws LikeBeforeException {
         Post post=postRepository.findById(postid).get();
         User user=userRepository.findByNickname(nickname);
+        for(var i : post.getAgree()){
+            if(i.getId()==user.getId()){
+               throw new LikeBeforeException("Da like roi");
+            }
+        }
         UserDTO dto=new UserDTO(user.getId(), user.getNickname());
-        post.getAgree().add(dto);
         if(post.getDisagree().contains(dto)){
             post.getDisagree().remove(dto);
+            Post p=postRepository.save(post);
+            user.addLikedPost(p);
+            userRepository.save(user);
+            return;
         }
+        post.getAgree().add(dto);
         Post p=postRepository.save(post);
         user.addLikedPost(p);
         userRepository.save(user);
     }
 
-    public void updateDisagree(int postid, String nickname){
+    public void updateDisagree(int postid, String nickname) throws DislikeBeforeException {
         Post post=postRepository.findById(postid).get();
         User user=userRepository.findByNickname(nickname);
+        for(var i : post.getDisagree()){
+            if(i.getId()==user.getId()){
+                throw new DislikeBeforeException("Da dislike roi");
+            }
+        }
         UserDTO dto=new UserDTO(user.getId(), user.getNickname());
-        post.getDisagree().add(dto);
         if(post.getAgree().contains(dto)){
             post.getAgree().remove(dto);
+            Post p=postRepository.save(post);
+            user.addDislikedPost(p);
+            userRepository.save(user);
+            return;
         }
+        post.getDisagree().add(dto);
         Post p=postRepository.save(post);
         user.addDislikedPost(p);
         userRepository.save(user);

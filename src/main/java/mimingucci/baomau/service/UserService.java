@@ -125,7 +125,7 @@ public class UserService {
         user.setRating(0d);
         user.setDescription(description);
         user.setCreatedtime(new Date());
-        user.setEnabled(false);
+        user.setEnabled(true);
         user.setReviews(new HashSet<>());
         user.setPosts(new HashSet<>());
         user.setComments(new HashSet<>());

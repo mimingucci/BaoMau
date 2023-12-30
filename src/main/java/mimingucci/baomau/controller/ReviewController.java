@@ -11,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -54,6 +56,15 @@ public class ReviewController {
         return new ResponseEntity<>(review, HttpStatus.FOUND);
     }
 
+    @GetMapping(path = "/get/user/{nickname}")
+    public ResponseEntity<?> getReviewByNickname(@PathVariable(name = "nickname") String nickname){
+        List<Review> review=reviewService.getReviewsByUser(nickname);
+        if(review==null) {
+            return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(review, HttpStatus.FOUND);
+    }
+
     @DeleteMapping(path = "/delete/{id}")
     public ResponseEntity<?> deleteReview(@PathVariable(name = "id") int id){
         reviewRepository.deleteById(id);
@@ -64,7 +75,7 @@ public class ReviewController {
     public ResponseEntity<?> updateAgree(@RequestParam(name = "nickname") String nickname, @PathVariable(name = "id") int id) throws UserNotFoundException {
         try {
             reviewService.updateAgree(id, nickname);
-        } catch (ReviewNotFoundException e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("Da update danh sach agree cua review", HttpStatus.OK);
@@ -74,7 +85,7 @@ public class ReviewController {
     public ResponseEntity<?> updateDisagree(@RequestParam(name = "nickname") String nickname, @PathVariable(name = "id") int id) throws UserNotFoundException {
         try {
             reviewService.updateDisagree(id, nickname);
-        } catch (ReviewNotFoundException e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("Da update danh sach disagree cua review", HttpStatus.OK);

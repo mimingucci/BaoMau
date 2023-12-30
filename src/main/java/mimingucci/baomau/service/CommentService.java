@@ -4,9 +4,7 @@ import mimingucci.baomau.entity.Comment;
 import mimingucci.baomau.entity.Post;
 import mimingucci.baomau.entity.User;
 import mimingucci.baomau.entity.UserDTO;
-import mimingucci.baomau.exception.CommentNotFoundException;
-import mimingucci.baomau.exception.PostNotFoundException;
-import mimingucci.baomau.exception.UserNotFoundException;
+import mimingucci.baomau.exception.*;
 import mimingucci.baomau.repository.CommentRepository;
 import mimingucci.baomau.repository.PostRepository;
 import mimingucci.baomau.repository.UserDTORepository;
@@ -94,27 +92,41 @@ public class CommentService {
           return commentRepository.findById(id).get();
      }
 
-     public void updateAgree(int commentid, String nickname) throws UserNotFoundException {
+     public void updateAgree(int commentid, String nickname) throws UserNotFoundException, LikeBeforeException {
           Comment comment=commentRepository.findById(commentid).get();
           User user=userService.findUserByNickname(nickname);
           UserDTO dto=new UserDTO(user.getId(), user.getNickname());
-          comment.addAgree(dto);
           if(comment.getDisagree().contains(dto)){
                comment.getDisagree().remove(dto);
+               Comment cm=commentRepository.save(comment);
+               user.getDislikedcomments().remove(cm);
+               userRepository.save(user);
+               return;
           }
+          if(comment.getAgree().contains(dto)){
+               throw new LikeBeforeException("Da like roi");
+          }
+          comment.addAgree(dto);
           Comment cm=commentRepository.save(comment);
           user.addLikedComment(cm);
           userRepository.save(user);
      }
 
-     public void updateDisagree(int commentid, String nickname) throws UserNotFoundException {
+     public void updateDisagree(int commentid, String nickname) throws UserNotFoundException, DislikeBeforeException {
           Comment comment=commentRepository.findById(commentid).get();
           User user=userService.findUserByNickname(nickname);
           UserDTO dto=new UserDTO(user.getId(), user.getNickname());
-          comment.addDisagree(dto);
           if(comment.getAgree().contains(dto)){
                comment.getAgree().remove(dto);
+               Comment cm=commentRepository.save(comment);
+               user.getLikedcomments().remove(cm);
+               userRepository.save(user);
+               return;
           }
+          if(comment.getDisagree().contains(dto)){
+               throw new DislikeBeforeException("Da dislike roi");
+          }
+          comment.addDisagree(dto);
           Comment cm=commentRepository.save(comment);
           user.addDislikedComment(cm);
           userRepository.save(user);

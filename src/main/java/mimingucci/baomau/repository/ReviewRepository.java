@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Integer> {
     @Query("update Review i set i.headline=?2, i.content=?3 where i.id=?1")
@@ -14,4 +16,7 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
 
     @Query("select i from Review i where i.author=?1 and i.user=?2")
     Review findByAuthorAndUser(String author, String user);
+
+    @Query("select i from Review i where i.user=?1")
+    List<Review> findByUser(String user);
 }

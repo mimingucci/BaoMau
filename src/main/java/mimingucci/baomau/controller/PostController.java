@@ -3,6 +3,8 @@ package mimingucci.baomau.controller;
 import mimingucci.baomau.entity.Post;
 import mimingucci.baomau.entity.User;
 import mimingucci.baomau.entity.UserDTO;
+import mimingucci.baomau.exception.DislikeBeforeException;
+import mimingucci.baomau.exception.LikeBeforeException;
 import mimingucci.baomau.exception.UserNotFoundException;
 import mimingucci.baomau.repository.PostRepository;
 import mimingucci.baomau.repository.UserRepository;
@@ -13,10 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @CrossOrigin
@@ -57,10 +56,17 @@ public class PostController {
         }
     }
 
-    @GetMapping(path = "/get/all")
+    @GetMapping(path = "/all")
     public ResponseEntity<?> getAll(){
         Set<Post> posts=new HashSet<>(postRepository.findAll());
-        return new ResponseEntity<>(posts, HttpStatus.OK);
+        List<Post> postList=new ArrayList<>(posts);
+        Collections.sort(postList, new Comparator<Post>() {
+            @Override
+            public int compare(Post o1, Post o2) {
+                return -o1.getPostedtime().compareTo(o2.getPostedtime());
+            }
+        });
+        return new ResponseEntity<>(postList, HttpStatus.OK);
     }
 
     @PutMapping(path = "/update/{id}")
@@ -76,14 +82,22 @@ public class PostController {
 
     @PutMapping(path = "/update/agree/{id}")
     public ResponseEntity<?> updateAgree(@RequestParam(name = "nickname") String nickname, @PathVariable(name = "id") int id){
-        postService.updateAgree(id, nickname);
-        return ResponseEntity.ok("Da them vao danh sach yeu thich bai post");
+        try {
+            postService.updateAgree(id, nickname);
+            return ResponseEntity.ok("Da them vao danh sach yeu thich bai post");
+        } catch (LikeBeforeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping(path = "/update/disagree/{id}")
     public ResponseEntity<?> updateDisagree(@RequestParam(name = "nickname") String nickname, @PathVariable(name = "id") int id){
-        postService.updateDisagree(id, nickname);
-        return ResponseEntity.ok("Da them vao danh sach khong yeu thich bai post");
+        try {
+            postService.updateDisagree(id, nickname);
+            return ResponseEntity.ok("Da them vao danh sach khong yeu thich bai post");
+        } catch (DislikeBeforeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping(path = "/get/allagree/{id}")

@@ -4,9 +4,7 @@ import mimingucci.baomau.entity.Comment;
 import mimingucci.baomau.entity.User;
 import mimingucci.baomau.entity.Review;
 import mimingucci.baomau.entity.UserDTO;
-import mimingucci.baomau.exception.ReviewExistBeforeException;
-import mimingucci.baomau.exception.UserNotFoundException;
-import mimingucci.baomau.exception.ReviewNotFoundException;
+import mimingucci.baomau.exception.*;
 import mimingucci.baomau.repository.ReviewRepository;
 import mimingucci.baomau.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +12,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
+import java.util.*;
 
 @Service
 @Transactional
@@ -44,6 +40,16 @@ public class ReviewService {
         return true;
     }
 
+    public List<Review> getReviewsByUser(String user){
+        List<Review> reviews=reviewRepository.findByUser(user);
+        Collections.sort(reviews, new Comparator<Review>() {
+            @Override
+            public int compare(Review o1, Review o2) {
+                return o2.getReviewtime().compareTo(o1.getReviewtime());
+            }
+        });
+        return reviews;
+    }
     public Review createReview(String headline, String content, int rating, String authornickname, String x) throws UserNotFoundException, ReviewExistBeforeException {
         User author=userService.findUserByNickname(authornickname);
         User user = userService.findUserByNickname(x);
@@ -93,7 +99,7 @@ public class ReviewService {
         reviewRepository.updateReview(reviewid, headline, content);
     }
 
-    public void updateAgree(int id, String nickname) throws UserNotFoundException, ReviewNotFoundException {
+    public void updateAgree(int id, String nickname) throws UserNotFoundException, ReviewNotFoundException, LikeBeforeException {
         Review review=reviewRepository.findById(id).get();
         if(review==null){
             throw new ReviewNotFoundException("Khong tim thay bai review voi id: "+id);
@@ -103,13 +109,23 @@ public class ReviewService {
             throw new UserNotFoundException("Khong tim thay user voi id: "+id);
         }
         UserDTO dto=new UserDTO(user.getId(), user.getNickname());
+        if(review.getAgree().contains(dto)){
+            throw new LikeBeforeException("Da like roi");
+        }
+        if(review.getDisagree().contains(dto)){
+            review.getDisagree().remove(dto);
+            Review rv=reviewRepository.save(review);
+            user.getDislikedreviews().remove(rv);
+            userRepository.save(user);
+            return;
+        }
         review.addAgree(dto);
         Review rv=reviewRepository.save(review);
         user.addLikedReview(rv);
         userRepository.save(user);
     }
 
-    public void updateDisagree(int id, String nickname) throws UserNotFoundException, ReviewNotFoundException {
+    public void updateDisagree(int id, String nickname) throws UserNotFoundException, ReviewNotFoundException, DislikeBeforeException {
         Review review=reviewRepository.findById(id).get();
         if(review==null){
             throw new ReviewNotFoundException("Khong tim thay bai review voi id: "+id);
@@ -119,6 +135,16 @@ public class ReviewService {
             throw new UserNotFoundException("Khong tim thay user voi id: "+id);
         }
         UserDTO dto=new UserDTO(user.getId(), user.getNickname());
+        if(review.getDisagree().contains(dto)){
+            throw new DislikeBeforeException("Da dislike roi");
+        }
+        if(review.getAgree().contains(dto)){
+            review.getAgree().remove(dto);
+            Review rv=reviewRepository.save(review);
+            user.getLikedreviews().remove(rv);
+            userRepository.save(user);
+            return;
+        }
         review.addDisagree(dto);
         Review rv=reviewRepository.save(review);
         user.addDislikedReview(rv);

@@ -3,9 +3,7 @@ package mimingucci.baomau.controller;
 import mimingucci.baomau.entity.Comment;
 import mimingucci.baomau.entity.User;
 import mimingucci.baomau.entity.UserDTO;
-import mimingucci.baomau.exception.CommentNotFoundException;
-import mimingucci.baomau.exception.PostNotFoundException;
-import mimingucci.baomau.exception.UserNotFoundException;
+import mimingucci.baomau.exception.*;
 import mimingucci.baomau.repository.CommentRepository;
 import mimingucci.baomau.repository.UserRepository;
 import mimingucci.baomau.service.CommentService;
@@ -73,14 +71,22 @@ public class CommentController {
 
     @PutMapping(path = "/update/agree/{id}")
     public ResponseEntity<?> updateAgree(@RequestParam(name = "nickname") String nickname, @PathVariable(name = "id") int id) throws UserNotFoundException {
-        commentService.updateAgree(id, nickname);
-        return new ResponseEntity<>("Da update danh sach agree cua commennt", HttpStatus.OK);
+        try {
+            commentService.updateAgree(id, nickname);
+            return new ResponseEntity<>("Da update danh sach agree cua commennt", HttpStatus.OK);
+        } catch (LikeBeforeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping(path = "/update/disagree/{id}")
     public ResponseEntity<?> updateDisagree(@RequestParam(name = "nickname") String nickname, @PathVariable(name = "id") int id) throws UserNotFoundException {
-        commentService.updateDisagree(id, nickname);
-        return new ResponseEntity<>("Da update danh sach disagree cua commennt", HttpStatus.OK);
+        try {
+            commentService.updateDisagree(id, nickname);
+            return new ResponseEntity<>("Da update danh sach disagree cua commennt", HttpStatus.OK);
+        } catch (DislikeBeforeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping(path = "/get/allagree/{id}")
