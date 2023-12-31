@@ -18,8 +18,19 @@ public class Message {
     @Column(nullable = false)
     private String author;
 
+    private Boolean seen;
+
     public Message() {
         this.time=new Date();
+        seen=false;
+    }
+
+    public Boolean getSeen() {
+        return seen;
+    }
+
+    public void setSeen(Boolean seen) {
+        this.seen = seen;
     }
 
     public Integer getId() {

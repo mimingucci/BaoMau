@@ -29,16 +29,4 @@ public class MessageService {
         this.userRepository = userRepository;
     }
 
-    public void addMessage(Message message) throws UserNotFoundException {
-        try {
-            User author=userService.findUserByNickname(message.getAuthor());
-            User recipient=userService.findUserByNickname(message.getRecipient());
-            message.setTime(new Date());
-            Message saved=messageRepository.save(message);
-            author.addMessage(saved);
-            userRepository.save(author);
-        } catch (UserNotFoundException e) {
-            throw new UserNotFoundException(e.getMessage());
-        }
-    }
 }

@@ -143,20 +143,6 @@ public class BaoMauController {
         return new ResponseEntity<>(savedUser, HttpStatus.ACCEPTED);
     }
 
-    @PutMapping(path = "/update/message/create")
-    public ResponseEntity<?> createMessage(@RequestBody Message message, HttpServletRequest request){
-//        Boolean isLogined=checkLoginedUser(request);
-//        if(!isLogined){
-//            return new ResponseEntity<>("User must login to continue", HttpStatus.BAD_REQUEST);
-//        }
-        try {
-            messageService.addMessage(message);
-            return new ResponseEntity<>("Da tao message", HttpStatus.CREATED);
-        } catch (UserNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
-
     @DeleteMapping(path = "/delete/{nickname}")
     public ResponseEntity<?> deleteUser(@PathVariable(name = "nickname") String nickname, HttpServletRequest request){
 //        Boolean isLogined=checkLoginedUser(request);

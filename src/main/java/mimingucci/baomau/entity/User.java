@@ -66,10 +66,6 @@ public class User {
     @JoinColumn(name = "userid")
     private Set<Comment> comments = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "userid")
-    private Set<Message> messages=new HashSet<>();
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name="user_id")
             , inverseJoinColumns = @JoinColumn(name="role_id")
@@ -410,26 +406,5 @@ public class User {
 
     public void setState(State state) {
         this.state = state;
-    }
-
-    public Set<Message> getMessages() {
-        return messages;
-    }
-
-    public void setMessages(Set<Message> messages) {
-        this.messages = messages;
-    }
-
-    public void addMessage(Message message){
-        this.messages.add(message);
-    }
-
-    public void deleteMessage(Message message){
-        for(var i : this.messages){
-            if(i.equals(message)){
-                this.messages.remove(i);
-                break;
-            }
-        }
     }
 }
